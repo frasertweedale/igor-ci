@@ -1,0 +1,72 @@
+#!/usr/bin/env python
+
+# This file is part of igor-ci - the ghastly CI system
+# Copyright (C) 2013  Fraser Tweedale
+#
+# igor-ci is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+import argparse
+import asyncore
+import json
+
+import igor.order
+
+parser = argparse.ArgumentParser(description='Execute an Igor build.')
+parser.add_argument('--host', required=True,
+    help='hostname of igor-ci server')
+parser.add_argument('--port', type=int, default=1602,
+    help='port of igor-ci server')
+parser.add_argument('--spec-uri', required=True, metavar='URI',
+    help='location of igor-ci git repository')
+parser.add_argument('--spec-ref', required=True, metavar='REF',
+    help='name of the spec to build')
+parser.add_argument('--source-uri', metavar='URI',
+     help='location of material to build/test; defaults to spec URI')
+parser.add_argument('--source-args', metavar='ARG', nargs='*',
+    help='extra arguments for the source')
+
+args = parser.parse_args()
+
+order = igor.order.Order(
+    spec_uri=args.spec_uri,
+    spec_ref=args.spec_ref,
+    desc='invoked via igor-trigger',
+    source_uri=args.source_uri or args.spec_uri,
+    source_args=args.source_args,
+)
+
+class TriggerClient(asyncore.dispatcher):
+    def __init__(self):
+        super().__init__()
+        self.create_socket()
+        self.connect((args.host, args.port))
+        msgobj = {
+            'command': 'ordercreate',
+            'params': {'order': order.to_obj()}}
+        self.buffer = json.dumps(msgobj).encode('UTF-8') + b'\v'
+
+    def handle_close(self):
+        self.close()
+
+    def writable(self):
+        return self.buffer
+
+    def handle_write(self):
+        sent = self.send(self.buffer)
+        self.buffer = self.buffer[sent:]
+        if not self.buffer:
+            self.close()
+
+TriggerClient()
+asyncore.loop()
