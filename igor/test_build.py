@@ -63,28 +63,35 @@ class BuildSpecTestCase(unittest.TestCase):
     def test_init_sets_name(self):
         self.assertEqual(self.bs.name, 'foo')
 
-    def test_empty_env_does_not_return_os_environ(self):
-        # does not return os.environ itself
-        bs = build.BuildSpec(name='foo', oid=None, env={}, steps=None, artifacts=None)
-        self.assertIsNot(bs.env, os.environ)
-
-        bs = build.BuildSpec(name='foo', oid=None, env=None, steps=None, artifacts=None)
-        self.assertIsNot(bs.env, os.environ)
-
     def test_empty_env_copies_current_environ(self):
-        bs = build.BuildSpec(name='foo', oid=None, env={}, steps=None, artifacts=None)
-        self.assertEqual(bs.env, os.environ, 'existing environment copied')
+        o = self.o.assign('bob')
+        expected = dict(os.environ)
 
-        bs = build.BuildSpec(name='foo', oid=None, env=None, steps=None, artifacts=None)
-        self.assertEqual(bs.env, os.environ, 'existing environment copied')
+        bs = build.BuildSpec(name='foo', oid=None, env=None, steps={}, artifacts=None)
+        with unittest.mock.patch.object(build_report, 'BuildReport') as mock:
+            br = bs.execute(order=o, source_oid=None, cwd='.')
+        self.assertIsNot(mock.call_args[1]['env'], os.environ)
+        self.assertEqual(mock.call_args[1]['env'], expected)
+
+        bs = build.BuildSpec(name='foo', oid=None, env={}, steps=[], artifacts=None)
+        with unittest.mock.patch.object(build_report, 'BuildReport') as mock:
+            br = bs.execute(order=o, source_oid=None, cwd='.')
+        self.assertIsNot(mock.call_args[1]['env'], os.environ)
+        self.assertEqual(mock.call_args[1]['env'], expected)
 
     def test_nonempty_env_extends_current_environ(self):
+        o = self.o.assign('bob')
+
         env = {'FOO': 'BAR'}
-        expected = os.environ.copy()
-        expected.update(env)
-        bs = build.BuildSpec(name='foo', oid=None, env=env, steps=None, artifacts=None)
-        self.assertEqual(bs.env, expected, 'new envvars added')
+        expected = dict(os.environ, **env)
+        bs = build.BuildSpec(name='foo', oid=None, env=env, steps={}, artifacts=None)
+        with unittest.mock.patch.object(build_report, 'BuildReport') as mock:
+            br = bs.execute(order=o, source_oid=None, cwd='.')
+        self.assertEqual(mock.call_args[1]['env'], expected, 'augments env')
 
         env = {k: 'FOO' for k in os.environ}
-        bs = build.BuildSpec(name='foo', oid=None, env=env, steps=None, artifacts=None)
-        self.assertEqual(bs.env, env, 'existing envvars overwritten')
+        expected = dict(os.environ, **env)
+        bs = build.BuildSpec(name='foo', oid=None, env=env, steps=[], artifacts=None)
+        with unittest.mock.patch.object(build_report, 'BuildReport') as mock:
+            br = bs.execute(order=o, source_oid=None, cwd='.')
+        self.assertEqual(mock.call_args[1]['env'], expected, 'overrides env')

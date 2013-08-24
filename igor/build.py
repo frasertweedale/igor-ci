@@ -131,10 +131,7 @@ class BuildSpec:
         self.oid = oid
         self.artifacts = artifacts or []
         self.steps = steps
-
-        self.env = os.environ.copy()
-        if env:
-            self.env.update(env)
+        self.env = env or {}
 
     def execute(self, *, order, source_oid=None, cwd):
         """Execute the build specification and return a ``BuildReport``.
@@ -146,11 +143,13 @@ class BuildSpec:
         if not order.assigned or order.completed:
             raise SpecError('order must be assigned and incomplete')
 
+        env = dict(os.environ, **self.env)
+
         # run the build steps
         step_reports = {}
         for name in sorted(self.steps):
             step_reports[name] = \
-                self.steps[name].execute(env=self.env, cwd=cwd)
+                self.steps[name].execute(env=env, cwd=cwd)
             if not step_reports[name].ok():
                 break
 
@@ -160,7 +159,7 @@ class BuildSpec:
             source_oid=source_oid,
             name=self.name,
             order=order.complete(),
-            env=self.env,
+            env=env,
             step_reports=step_reports
             # TODO artifacts
         )
