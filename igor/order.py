@@ -58,7 +58,7 @@ class Order:
 
     def __init__(
         self, *,
-        id=None, desc, spec_uri, spec_ref, source_uri, source_args,
+        id=None, desc, spec_uri, spec_ref, source_uri, source_args=None,
         env=None, created=None, assigned=None, completed=None, worker=None
     ):
         """Initialise the Order."""
