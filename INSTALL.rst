@@ -43,19 +43,30 @@ required.
 igor-ci
 -------
 
-Install igor-ci.
-
-::
+Install igor-ci::
 
   % git clone git://github.com/frasertweedale/igor-ci.git
   % cd igor-ci
   % python setup.py install
 
 
-Run igor-ci.
-
-::
+Run igor-ci::
 
   % export LD_LIBRARY_PATH=$LIBGIT2/lib:$LD_LIBRARY_PATH
   % python -m igor.server &
   % python -m igor.worker --host localhost &
+
+
+To monitor the behaviour of the system by subscribing to all server
+events, open a netcat session ``nc localhost 1602`` and follow the
+example transcript::
+
+  [bacardi:~] fraser% nc -v localhost 1602
+  Connection to localhost 1602 port [tcp/*] succeeded!
+
+::
+
+  >>> {"command": "subscribe", "params": {"events": []}}
+  <<< {"params": {}, "event": "Subscribe"}
+  ... time elapses; more events happen
+  <<< {"params": {}, "event": "OrderWaiting"}

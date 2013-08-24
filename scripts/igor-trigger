@@ -54,7 +54,7 @@ class TriggerClient(asyncore.dispatcher):
         msgobj = {
             'command': 'ordercreate',
             'params': {'order': order.to_obj()}}
-        self.buffer = json.dumps(msgobj).encode('UTF-8') + b'\v'
+        self.buffer = json.dumps(msgobj).encode('UTF-8') + b'\n'
 
     def handle_close(self):
         self.close()

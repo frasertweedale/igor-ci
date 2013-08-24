@@ -35,7 +35,7 @@ class Worker(asynchat.async_chat):
         self.create_socket()
         self.connect((host, port))
         self.ibuf = []
-        self.set_terminator(b'\v')
+        self.set_terminator(b'\n')
 
         logger.info('worker id: {}'.format(self.uuid))
 
@@ -63,7 +63,7 @@ class Worker(asynchat.async_chat):
 
     def push_obj(self, obj):
         """Serialise the object as UTF-8 encoded JSON and send."""
-        self.push(json.dumps(obj).encode('UTF-8') + b'\n\v')
+        self.push(json.dumps(obj).encode('UTF-8') + b'\n')
 
     def process_data(self, data):
         try:

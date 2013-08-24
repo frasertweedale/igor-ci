@@ -51,7 +51,7 @@ class ServerHandler(asynchat.async_chat):
         self.ordermgr.on_assign = self.ordermgr_on_assign_cb
 
         self.ibuf = []
-        self.set_terminator(b'\v')
+        self.set_terminator(b'\n')
         super().__init__(sock)
 
     def handle_close(self):
@@ -64,7 +64,7 @@ class ServerHandler(asynchat.async_chat):
 
     def push_obj(self, obj):
         """Serialise the object as UTF-8 encoded JSON and send."""
-        self.push(json.dumps(obj).encode('UTF-8') + b'\n\v')
+        self.push(json.dumps(obj).encode('UTF-8') + b'\n')
 
     def push_event(self, event):
         self.push_obj(event.to_obj())
