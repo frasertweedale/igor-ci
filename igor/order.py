@@ -14,7 +14,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import binascii
 import functools
 import logging
 import operator
@@ -143,7 +142,7 @@ class Order:
             logger.debug('found nothing (no such ref)')
             return None
         if isinstance(obj, pygit2.Commit):
-            logger.debug('found commit: {}'.format(binascii.b2a_hex(obj.oid)[:7]))
+            logger.debug('found commit: {}'.format(obj.oid.hex[:7]))
             return obj.oid
         else:
             logger.warning('found non-commit object')
@@ -197,7 +196,7 @@ class Order:
         while not pushed:
             repo.fetch()
             prev_oid = self._prev_oid(repo, report_ref) or repo.null_report()
-            logger.info('prev_oid: {}'.format(binascii.b2a_hex(prev_oid)[:7]))
+            logger.info('prev_oid: {}'.format(prev_oid.hex[:7]))
             report_commit = build_report.write(repo, prev_oid)
             repo.create_reference(report_ref, report_commit, force=True)
             pushed = repo.push(report_ref)
