@@ -56,7 +56,6 @@ class BuildSpecReadTestCase(test.EmptyRepoTestCase):
                     '2': build.BuildStep(script=b'ls'),
                 },
                 env=None,
-                artifacts=None
             )
         )
 
@@ -68,7 +67,6 @@ class BuildSpecTestCase(unittest.TestCase):
             oid=None,
             env={},
             steps=[],
-            artifacts=None
         )
         self.o = order.Order(
             spec_uri='/tmp/fake/local/dir',
@@ -105,13 +103,13 @@ class BuildSpecTestCase(unittest.TestCase):
         o = self.o.assign('bob')
         expected = dict(os.environ)
 
-        bs = build.BuildSpec(name='foo', oid=None, env=None, steps={}, artifacts=None)
+        bs = build.BuildSpec(name='foo', oid=None, env=None, steps={})
         with unittest.mock.patch.object(build_report, 'BuildReport') as mock:
             br = bs.execute(order=o, source_oid=None, cwd='.')
         self.assertIsNot(mock.call_args[1]['env'], os.environ)
         self.assertEqual(mock.call_args[1]['env'], expected)
 
-        bs = build.BuildSpec(name='foo', oid=None, env={}, steps=[], artifacts=None)
+        bs = build.BuildSpec(name='foo', oid=None, env={}, steps={})
         with unittest.mock.patch.object(build_report, 'BuildReport') as mock:
             br = bs.execute(order=o, source_oid=None, cwd='.')
         self.assertIsNot(mock.call_args[1]['env'], os.environ)
@@ -122,14 +120,14 @@ class BuildSpecTestCase(unittest.TestCase):
 
         env = {'FOO': 'BAR'}
         expected = dict(os.environ, **env)
-        bs = build.BuildSpec(name='foo', oid=None, env=env, steps={}, artifacts=None)
+        bs = build.BuildSpec(name='foo', oid=None, env=env, steps={})
         with unittest.mock.patch.object(build_report, 'BuildReport') as mock:
             br = bs.execute(order=o, source_oid=None, cwd='.')
         self.assertEqual(mock.call_args[1]['env'], expected, 'augments env')
 
         env = {k: 'FOO' for k in os.environ}
         expected = dict(os.environ, **env)
-        bs = build.BuildSpec(name='foo', oid=None, env=env, steps=[], artifacts=None)
+        bs = build.BuildSpec(name='foo', oid=None, env=env, steps={})
         with unittest.mock.patch.object(build_report, 'BuildReport') as mock:
             br = bs.execute(order=o, source_oid=None, cwd='.')
         self.assertEqual(mock.call_args[1]['env'], expected, 'overrides env')

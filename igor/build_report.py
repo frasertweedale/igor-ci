@@ -109,8 +109,6 @@ class BuildStepReport:
 
 
 class BuildReport:
-    # TODO artifacts
-
     @classmethod
     def from_commit(cls, repo, oid):
         commit = repo[oid]

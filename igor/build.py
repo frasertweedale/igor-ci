@@ -77,7 +77,7 @@ class BuildStep:
 
 class BuildSpec:
     """A build specification."""
-    __slots__ = 'env', 'oid',  'name', 'steps', 'artifacts'
+    __slots__ = 'env', 'oid',  'name', 'steps'
     __attrs__ = __slots__
 
     @classmethod
@@ -100,16 +100,11 @@ class BuildSpec:
             for te in repo[tree['steps'].oid]
         }
 
-        artifacts = None
-        if 'artifacts' in tree:
-            raise NotImplementedError
-
         return cls(
             name=name,
             oid=commit_oid,
             env=env,
             steps=steps,
-            artifacts=artifacts
         )
 
     def __eq__(self, other):
@@ -130,7 +125,7 @@ class BuildSpec:
             )
         )
 
-    def __init__(self, *, name, oid, env, steps, artifacts):
+    def __init__(self, *, name, oid, env, steps):
         """Initialise the build spec.
 
         ``name``
@@ -146,15 +141,10 @@ class BuildSpec:
         ``steps``
           Mapping of name to ``BuildStep``.  Build steps will be
           executed in lexicographic order.
-        ``artifacts``
-          Mapping of paths (relative to root of source checkout)
-          keyed by name (to archive as) to be archived, if present
-          in the checkout after successful execution of the spec.
 
         """
         self.name = name
         self.oid = oid
-        self.artifacts = artifacts or []
         self.steps = steps
         self.env = env or {}
 
@@ -186,5 +176,4 @@ class BuildSpec:
             order=order.complete(),
             env=env,
             step_reports=step_reports
-            # TODO artifacts
         )
