@@ -32,9 +32,15 @@ class SpecError(Exception):
 class BuildStep:
     """A single step in a build process."""
     @classmethod
-    def from_blob(cls, blob):
+    def from_blob(cls, repo, oid):
         """Instantiate from a blob in the given repository."""
-        return cls(script=blob.data)
+        return cls(script=repo[oid].data)
+
+    def __eq__(self, other):
+        return isinstance(other, type(self)) and self._script == other._script
+
+    def __ne__(self, other):
+        return not self == other
 
     def __init__(self, *, script):
         self._script = script  # shell script to execute (bytes)
@@ -72,25 +78,26 @@ class BuildStep:
 class BuildSpec:
     """A build specification."""
     __slots__ = 'env', 'oid',  'name', 'steps', 'artifacts'
+    __attrs__ = __slots__
 
     @classmethod
     def from_ref(cls, repo, name):
         obj = repo.revparse_single(name)
-        return cls.from_commit(name, git.peel(repo, 'commit', obj))
+        return cls.from_commit(repo, name, git.peel(repo, 'commit', obj))
 
     @classmethod
-    def from_commit(cls, name, commit):
-        return cls.from_tree(name, commit.oid, commit.tree)
+    def from_commit(cls, repo, name, commit):
+        return cls.from_tree(repo, name, commit.oid, commit.tree)
 
     @classmethod
-    def from_tree(cls, name, commit_oid, tree):
+    def from_tree(cls, repo, name, commit_oid, tree):
         env = None
         if 'env' in tree:
             raise NotImplementedError
 
         steps = {
-            te.name: BuildStep.from_blob(te.to_object())
-            for te in tree['steps'].to_object()
+            te.name: BuildStep.from_blob(repo, te.oid)
+            for te in repo[tree['steps'].oid]
         }
 
         artifacts = None
@@ -103,6 +110,24 @@ class BuildSpec:
             env=env,
             steps=steps,
             artifacts=artifacts
+        )
+
+    def __eq__(self, other):
+        if isinstance(other, type(self)):
+            return all(
+                getattr(self, attr) == getattr(other, attr)
+                for attr in self.__attrs__
+            )
+        else:
+            return False
+
+    def __repr__(self):
+        return '{}({})'.format(
+            type(self).__name__,
+            ', '.join(
+                '{}={}'.format(attr, getattr(self, attr))
+                for attr in self.__attrs__
+            )
         )
 
     def __init__(self, *, name, oid, env, steps, artifacts):

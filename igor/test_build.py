@@ -19,9 +19,46 @@ import time
 import unittest
 import unittest.mock
 
+import pygit2
+
 from . import build
 from . import build_report
 from . import order
+from . import test
+
+
+class BuildSpecReadTestCase(test.EmptyRepoTestCase):
+    """Test case to read a build spec from a repository."""
+    def test_successfully_reads_build_spec_with_multiple_steps(self):
+        steps_tb = self.repo.TreeBuilder()
+        oid = self.repo.create_blob(b'true')
+        steps_tb.insert('1', oid, pygit2.GIT_FILEMODE_BLOB)
+        oid = self.repo.create_blob(b'ls')
+        steps_tb.insert('2', oid, pygit2.GIT_FILEMODE_BLOB)
+
+        tb = self.repo.TreeBuilder()
+        tb.insert('steps', steps_tb.write(), pygit2.GIT_FILEMODE_TREE)
+
+        commit_oid = self.repo.create_commit(
+            'refs/ci/spec/test',
+            'test spec',
+            tb.write(),
+            []
+        )
+
+        self.assertEqual(
+            build.BuildSpec.from_ref(self.repo, 'refs/ci/spec/test'),
+            build.BuildSpec(
+                name='refs/ci/spec/test',
+                oid=commit_oid,
+                steps={
+                    '1': build.BuildStep(script=b'true'),
+                    '2': build.BuildStep(script=b'ls'),
+                },
+                env=None,
+                artifacts=None
+            )
+        )
 
 
 class BuildSpecTestCase(unittest.TestCase):
