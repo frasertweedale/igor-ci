@@ -18,6 +18,7 @@ import binascii
 import functools
 import logging
 import operator
+import os
 import tempfile
 import time
 import uuid
