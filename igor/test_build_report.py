@@ -64,7 +64,7 @@ class BuildStepReportTestCase(test.EmptyRepoTestCase):
     def test_write_then_read_yields_eq_obj(self):
         oid = pass_bsr.write(self.repo)
         self.assertEqual(
-            build_report.BuildStepReport.from_tree(self.repo[oid]),
+            build_report.BuildStepReport.from_tree(self.repo, oid),
             pass_bsr
         )
 
@@ -191,7 +191,7 @@ class BuildReportTestCase(test.EmptyRepoTestCase):
             step_reports={'100': pass_bsr, '200': pass_bsr}
         )
         oid = br.write(self.repo, self.repo.null_report())
-        br2 = build_report.BuildReport.from_commit(self.repo[oid])
+        br2 = build_report.BuildReport.from_commit(self.repo, oid)
         for name in (
             'spec_oid', 'source_oid',
             'name', 'order', 'env', 'step_reports',

@@ -52,12 +52,8 @@ Dependencies
 
 * Git >= v1.8.1.3
 * Python 3.3
-* libgit2
-* pygit2
-
-Development versions of libgit2 and pygit2 are required.  The
-versions of the libraries used are stated in the ``DEPENDENCIES``
-file.
+* libgit2 ~ v0.19
+* pygit2 ~ v0.19
 
 
 License

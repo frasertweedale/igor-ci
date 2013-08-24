@@ -14,7 +14,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import binascii
 import tempfile
 
 import pygit2
@@ -25,9 +24,9 @@ from . import test
 class GitBuildSourceTestCase(test.EmptyRepoTestCase):
     def setUp(self):
         super().setUp()
-        self._sha = self.repo.null_report()
-        self._commit = binascii.b2a_hex(self._sha)[:7]
-        self.repo.create_reference('refs/heads/master', self._sha)
+        self._oid = self.repo.null_report()
+        self._commit = self._oid.hex[:7]
+        self.repo.create_reference('refs/heads/master', self._oid)
         self._target_dir = tempfile.TemporaryDirectory()
 
     def tearDown(self):
@@ -38,11 +37,11 @@ class GitBuildSourceTestCase(test.EmptyRepoTestCase):
         bs = build_source.GitBuildSource(self.repo.path, self._commit)
         bs.checkout(self._target_dir.name)
         repo = pygit2.Repository(self._target_dir.name)
-        self.assertIn(self._sha, repo)
+        self.assertIn(self._oid, repo)
 
     def test_nonlocal_clone(self):
         source = 'file://' + self.repo.path
         bs = build_source.GitBuildSource(source, self._commit)
         bs.checkout(self._target_dir.name)
         repo = pygit2.Repository(self._target_dir.name)
-        self.assertIn(self._sha, repo)
+        self.assertIn(self._oid, repo)

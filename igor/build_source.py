@@ -138,6 +138,6 @@ class GitBuildSource(BuildSource):
                 cwd=dest
             )
 
-        return pygit2.Repository(dest).head.oid
+        return pygit2.Repository(dest).head.target
 
 BuildSource.register('git', GitBuildSource)

@@ -31,13 +31,14 @@ class BuildStepReport:
     __attrs__ = {'exit', 't_start', 't_finish', 'stdout', 'stderr'}
 
     @classmethod
-    def from_tree(cls, tree):
+    def from_tree(cls, repo, oid):
+        tree = repo[oid]
         return cls(
-            exit=int(tree['exit'].to_object().data),
-            t_start=float(tree['t_start'].to_object().data),
-            t_finish=float(tree['t_finish'].to_object().data),
-            stdout=tree['stdout'].to_object().data,
-            stderr=tree['stderr'].to_object().data
+            exit=int(repo[tree['exit'].oid].data),
+            t_start=float(repo[tree['t_start'].oid].data),
+            t_finish=float(repo[tree['t_finish'].oid].data),
+            stdout=repo[tree['stdout'].oid].data,
+            stderr=repo[tree['stderr'].oid].data
         )
 
     def __init__(self, *, exit, t_start, t_finish, stdout, stderr):
@@ -111,18 +112,19 @@ class BuildReport:
     # TODO artifacts
 
     @classmethod
-    def from_commit(cls, commit):
+    def from_commit(cls, repo, oid):
+        commit = repo[oid]
         parents = [c.oid for c in commit.parents]
         step_reports = {
-            te.name: BuildStepReport.from_tree(te.to_object())
-            for te in commit.tree['steps'].to_object()
+            te.name: BuildStepReport.from_tree(repo, te.oid)
+            for te in repo[commit.tree['steps'].oid]
         }
         return cls(
             spec_oid=parents[1],
             source_oid=parents[2] if len(parents) >= 3 else None,
             name=re.search(r'(?<= ).*', commit.message).group(),
-            order=order.Order.from_blob(commit.tree['order'].to_object()),
-            env=git.bytes_to_obj(commit.tree['env'].to_object().data),
+            order=order.Order.from_blob(repo[commit.tree['order'].oid]),
+            env=git.bytes_to_obj(repo[commit.tree['env'].oid].data),
             step_reports=step_reports
         )
 
