@@ -17,6 +17,7 @@
 import os
 import time
 import unittest
+import unittest.mock
 
 from . import build
 from . import build_report
