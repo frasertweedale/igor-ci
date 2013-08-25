@@ -19,6 +19,7 @@ import asynchat
 import logging
 import json
 import multiprocessing
+import traceback
 import uuid
 
 from .. import order
@@ -81,15 +82,14 @@ class Worker(asynchat.async_chat):
             o = order.Order.from_obj(obj['order'])
             # TODO check order is assigned and not complete
 
-            #order.execute(repo)  FIXME faking it!
-
             def success_cb(result):
                 self.push_obj(result)
                 self._register_assign()
 
             def error_cb(e):
                 # TODO report build failure to server
-                logger.error(e)
+                logger.error("Error in worker process:\n{}".format(e.args[0]))
+                self.push_obj(build_ordercomplete_obj(o.id))
                 self._register_assign()
 
             self.pool.apply_async(
@@ -97,6 +97,13 @@ class Worker(asynchat.async_chat):
                 callback=success_cb,
                 error_callback=error_cb
             )
+
+
+def build_ordercomplete_obj(order_id):
+    return {
+        'command': 'ordercomplete',
+        'params': {'order_id': order_id},
+    }
 
 
 # TODO: can open a socket in each worker to send progress to server,
@@ -111,9 +118,8 @@ def work(order):
     picklable to work with ``multiprocessing``.
 
     """
-
-    order.execute()
-    return {
-        'command': 'ordercomplete',
-        'params': {'order_id': order.id},
-    }
+    try:
+        order.execute()
+    except Exception as e:
+        raise RuntimeError(traceback.format_exc())
+    return build_ordercomplete_obj(order.id)
