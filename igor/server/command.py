@@ -133,16 +133,19 @@ class OrderAssign(Command):
 class OrderComplete(Command):
     """Report completion of an order."""
     @classmethod
-    def parse_params(cls, *, order_id):
+    def parse_params(cls, *, order_id, result):
         try:
-            return {'order_id': str(uuid.UUID(order_id))}
+            return {
+                'order_id': str(uuid.UUID(order_id)),
+                'result': result
+            }
         except ValueError as e:
             raise error.ParamError(str(e)) from e
 
-    def execute(self, *, order_id):
+    def execute(self, *, order_id, result):
         self.handler.ordermgr.complete_order_id(order_id)
         self.handler.eventmgr.push_event(
-            event.OrderCompleted(order_id=order_id)
+            event.OrderCompleted(order_id=order_id, result=result)
         )
 
 

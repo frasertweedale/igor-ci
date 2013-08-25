@@ -87,9 +87,8 @@ class Worker(asynchat.async_chat):
                 self._register_assign()
 
             def error_cb(e):
-                # TODO report build failure to server
                 logger.error("Error in worker process:\n{}".format(e.args[0]))
-                self.push_obj(build_ordercomplete_obj(o.id))
+                self.push_obj(build_ordercomplete_obj(o.id, 'E'))
                 self._register_assign()
 
             self.pool.apply_async(
@@ -99,10 +98,10 @@ class Worker(asynchat.async_chat):
             )
 
 
-def build_ordercomplete_obj(order_id):
+def build_ordercomplete_obj(order_id, result):
     return {
         'command': 'ordercomplete',
-        'params': {'order_id': order_id},
+        'params': {'order_id': order_id, 'result': result},
     }
 
 
@@ -122,4 +121,4 @@ def work(order):
         order.execute()
     except Exception as e:
         raise RuntimeError(traceback.format_exc())
-    return build_ordercomplete_obj(order.id)
+    return build_ordercomplete_obj(order.id, 'C')

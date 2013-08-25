@@ -136,7 +136,7 @@ class OrderAssignTestCase(unittest.TestCase):
 
 
 class OrderCompleteTestCase(unittest.TestCase):
-    def test_parse_params_takes_order_id_arg_only_else_raises_TypeError(self):
+    def test_parse_params_requires_uuid_order_id_and_result(self):
         with self.assertRaises(TypeError):
             command.OrderComplete.parse_params()
         with self.assertRaises(TypeError):
@@ -144,32 +144,32 @@ class OrderCompleteTestCase(unittest.TestCase):
         u = str(uuid.uuid4())
         with self.assertRaises(TypeError):
             command.OrderComplete.parse_params(order_id=u, foo=1)
+        with self.assertRaises(TypeError):
+            command.OrderComplete.parse_params(foo=1, result='C')
 
-    def test_parse_params_raises_ParamError_on_invalid_uuid(self):
         u = str(uuid.uuid4())[:-1]
         with self.assertRaises(error.ParamError):
-            command.OrderComplete.parse_params(order_id=u)
+            command.OrderComplete.parse_params(order_id=u, result='C')
 
-    def test_parse_params_returns_normalised_uuid_on_valid_input(self):
         u = str(uuid.uuid4())
         weird_u = u.replace('-', '').upper()
         self.assertEqual(
-            command.OrderComplete.parse_params(order_id=weird_u),
-            {'order_id': u}
+            command.OrderComplete.parse_params(order_id=weird_u, result='C'),
+            {'order_id': u, 'result': 'C'}
         )
 
     def test_execute_calls_complete_id_on_order_manager_with_order_id(self):
         h = unittest.mock.Mock()
         u = str(uuid.uuid4())
         cmd = command.OrderComplete(h)
-        cmd.execute(**cmd.parse_params(order_id=u))
+        cmd.execute(**cmd.parse_params(order_id=u, result='C'))
         h.ordermgr.complete_order_id.assert_called_once_with(u)
 
     def test_execute_emits_OrderCompleted_event(self):
         h = unittest.mock.Mock()
         u = str(uuid.uuid4())
         cmd = command.OrderComplete(h)
-        cmd.execute(**cmd.parse_params(order_id=u))
+        cmd.execute(**cmd.parse_params(order_id=u, result='C'))
         h.eventmgr.push_event.assert_called_once_with(
-            event.OrderCompleted(order_id=u)
+            event.OrderCompleted(order_id=u, result='C')
         )
