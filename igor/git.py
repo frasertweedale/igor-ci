@@ -36,21 +36,22 @@ class Repository(pygit2.Repository):
 
     @classmethod
     def clone(cls, source, dest):
-        """Clone the source repository to the destination.
+        """Clone the source repository to the destination with CI refspec.
 
-        Clone will not retrieve CI-related refs, so a subsequent
-        fetch() is required.
+        We init then fetch rather than cloning so that we can munge
+        the refspecs to fetch only CI refs.
 
         """
-        subprocess.check_call([
-            'git', 'clone', '--quiet', '--bare',
-            '--config',
-            'remote.origin.fetch=+refs/ci/spec/*:refs/ci/spec/*',
-            '--config',
-            'remote.origin.fetch=+refs/ci/report/*:refs/ci/report/*',
-            source, dest
-        ], stderr=subprocess.DEVNULL)
+        repo = pygit2.init_repository(dest, bare=True)
+        remote = repo.create_remote('origin', source)
+        repo.config.set_multivar(
+            'remote.origin.fetch', '',
+            '+refs/ci/spec/*:refs/ci/spec/*')
+        repo.config.set_multivar(
+            'remote.origin.fetch', 'report',
+            '+refs/ci/report/*:refs/ci/report/*')
         repo = cls(dest)
+        repo.fetch()
         return repo
 
     def _git(self, *args):
@@ -72,7 +73,7 @@ class Repository(pygit2.Repository):
             return cls.clone(source, dest)
 
     def fetch(self):
-        self._git('fetch', 'origin')
+        self.remotes[0].fetch()  # TODO check for name 'origin'?
 
     def push(self, refspec):
         """Push the repository.

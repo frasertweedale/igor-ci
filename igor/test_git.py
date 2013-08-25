@@ -122,13 +122,13 @@ class RepositoryTestCase(test.EmptyRepoTestCase):
 
     def test_clone_or_open_opens_existing_repo(self):
         oid = self.repo.null_report()
-        self.repo.create_reference('refs/heads/master', oid)
+        self.repo.create_reference('refs/ci/report/null', oid)
         with tempfile.TemporaryDirectory() as name:
             newrepo = git.Repository.clone(self.repo.path, name)
             newrepo2 = git.Repository.clone_or_open('ignored', name)
             self.assertIn(oid, newrepo2)
             self.assertEqual(
-                newrepo2.revparse_single('refs/heads/master').oid,
+                newrepo2.revparse_single('refs/ci/report/null').oid,
                 oid
             )
 
