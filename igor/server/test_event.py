@@ -36,7 +36,8 @@ class EventTestCase(unittest.TestCase):
         @event.Event.register
         class X(event.Event):
             @classmethod
-            def name(cls): return 'FooBar'
+            def name(cls):
+                return 'FooBar'
 
         self.assertIs(event.Event.lookup('FooBar'), X)
 
@@ -60,11 +61,13 @@ class EventTestCase(unittest.TestCase):
         """
         class A(event.Event):
             @classmethod
-            def name(cls): return 'A'
+            def name(cls):
+                return 'A'
 
         class B(event.Event):
             @classmethod
-            def name(cls): return 'B'
+            def name(cls):
+                return 'B'
 
         self.assertTrue(A(x=1) == A(x=1))
         self.assertFalse(A(x=1) != A(x=1))

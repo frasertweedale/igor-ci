@@ -126,13 +126,11 @@ class BuildReport:
             step_reports=step_reports
         )
 
-    def __init__(self, *,
-        spec_oid,
-        source_oid=None,
-        name,
-        order,
-        env,
-        step_reports
+    def __init__(
+        self,
+        *,
+        spec_oid, source_oid=None, name,
+        order, env, step_reports
     ):
         """Initialise the build report.
 

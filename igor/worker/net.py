@@ -75,8 +75,8 @@ class Worker(asynchat.async_chat):
 
     def process_obj(self, obj):
         if 'order' not in obj:
-            logger.warn('received obj that is not an order; ignoring: {}'
-                    .format(obj))
+            logger.warn(
+                'received obj that is not an order; ignoring: {}'.format(obj))
         else:
             logger.info('received order: {}'.format(obj))
             o = order.Order.from_obj(obj['order'])

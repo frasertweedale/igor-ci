@@ -25,9 +25,11 @@ from . import net
 
 def main():
     parser = argparse.ArgumentParser(description='igor-ci worker')
-    parser.add_argument('--host', required=True,
+    parser.add_argument(
+        '--host', required=True,
         help='hostname of igor-ci server')
-    parser.add_argument('--port', type=int, default=1602,
+    parser.add_argument(
+        '--port', type=int, default=1602,
         help='port of igor-ci server')
     parser.add_argument('--logging', metavar='LEVEL')
     args = parser.parse_args()

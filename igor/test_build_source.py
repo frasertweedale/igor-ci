@@ -21,6 +21,7 @@ import pygit2
 from . import build_source
 from . import test
 
+
 class GitBuildSourceTestCase(test.EmptyRepoTestCase):
     def setUp(self):
         super().setUp()

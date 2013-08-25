@@ -35,5 +35,6 @@ class ClientError(Error):
 class CommandError(ClientError):
     """Client has error in command selection."""
 
+
 class ParamError(ClientError):
     """Client has error in command parameters."""

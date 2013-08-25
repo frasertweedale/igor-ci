@@ -112,7 +112,6 @@ class RepositoryTestCase(test.EmptyRepoTestCase):
                 oid
             )
 
-
     def test_clone_or_open_clones_missing_repo(self):
         oid = self.repo.null_report()
         self.repo.create_reference('refs/ci/report/foo', oid)

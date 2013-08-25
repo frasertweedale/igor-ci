@@ -30,16 +30,22 @@ class CommandTestCase(unittest.TestCase):
 
     def test_inherited_name_method_returns_subclass_name(self):
         class Foo(command.Command):
-            def parse_params(): pass
-            def execute(): pass
+            def parse_params():
+                pass
+
+            def execute():
+                pass
 
         self.assertEqual(Foo.name(), "Foo")
 
     @unittest.mock.patch(command.__package__ + '.command.Command.commands', {})
     def test_register_returns_registered_command(self):
         class X(command.Command):
-            def parse_params(): pass
-            def execute(): pass
+            def parse_params():
+                pass
+
+            def execute():
+                pass
 
         self.assertIs(command.Command.register(X), X)
 
@@ -47,10 +53,15 @@ class CommandTestCase(unittest.TestCase):
     def test_register_registers_command_by_name_given_by_name_method(self):
         @command.Command.register
         class Foo(command.Command):
-            def parse_params(): pass
-            def execute(): pass
+            def parse_params():
+                pass
+
+            def execute():
+                pass
+
             @classmethod
-            def name(cls): return 'FooBar'
+            def name(cls):
+                return 'FooBar'
 
         self.assertIs(command.Command.lookup('FooBar'), Foo)
 
@@ -63,10 +74,15 @@ class CommandTestCase(unittest.TestCase):
     def test_lookup_finds_command_by_exact_name(self):
         @command.Command.register
         class X(command.Command):
-            def parse_params(): pass
-            def execute(): pass
+            def parse_params():
+                pass
+
+            def execute():
+                pass
+
             @classmethod
-            def name(cls): return 'FooBar'
+            def name(cls):
+                return 'FooBar'
 
         self.assertIs(command.Command.lookup('FooBar'), X)
 
@@ -74,8 +90,11 @@ class CommandTestCase(unittest.TestCase):
     def test_lookup_finds_command_case_insensitively(self):
         @command.Command.register
         class FooBar(command.Command):
-            def parse_params(): pass
-            def execute(): pass
+            def parse_params():
+                pass
+
+            def execute():
+                pass
 
         self.assertIs(command.Command.lookup('foobar'), FooBar)
         self.assertIs(command.Command.lookup('FOOBAR'), FooBar)
@@ -85,10 +104,15 @@ class CommandTestCase(unittest.TestCase):
     def test_lookup_strs_argument(self):
         @command.Command.register
         class X(command.Command):
-            def parse_params(): pass
-            def execute(): pass
+            def parse_params():
+                pass
+
+            def execute():
+                pass
+
             @classmethod
-            def name(cls): return '1'
+            def name(cls):
+                return '1'
 
         self.assertIs(command.Command.lookup(1), X)
 
@@ -108,7 +132,8 @@ class SubscribeTestCase(unittest.TestCase):
     @unittest.mock.patch(event.__package__ + '.event.Event.events', {})
     def test_param_events_known_event_name_replaced_with_type(self):
         @event.Event.register
-        class FakeEvent(event.Event): pass
+        class FakeEvent(event.Event):
+            pass
 
         inargs = {"events": ['fakeevent']}
         outargs = command.Subscribe.parse_params(**inargs)
