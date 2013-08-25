@@ -16,9 +16,12 @@
 
 import abc
 import collections
+import logging
 import subprocess
 
 import pygit2
+
+logger = logging.getLogger(__name__)
 
 
 class BuildSource(metaclass=abc.ABCMeta):
@@ -111,6 +114,7 @@ class GitBuildSource(BuildSource):
         at the given location.
 
         """
+        # TODO use pygit2 remote_ls functionality when implemented
         try:
             subprocess.check_call(
                 ['git', 'ls-remote', uri],
@@ -127,17 +131,10 @@ class GitBuildSource(BuildSource):
         Return the oid of the checked-out commit.
 
         """
-        # TODO use pygit2 clone functionality when implemented
-        subprocess.check_call(
-            ['git', 'clone', '--quiet', self._url, dest],
-            stderr=subprocess.DEVNULL
-        )
-        if self._rev:
-            subprocess.check_call(
-                ['git', 'checkout', '--quiet', self._rev],
-                cwd=dest
-            )
-
-        return pygit2.Repository(dest).head.target
+        logger.debug('cloning {} into {}'.format(self._url, dest))
+        repo = pygit2.clone_repository(self._url, dest)
+        logger.debug('checking out {!r}'.format(self._rev))
+        repo.checkout_tree(repo[self._rev], pygit2.GIT_CHECKOUT_SAFE_CREATE)
+        return repo.head.target
 
 BuildSource.register('git', GitBuildSource)
